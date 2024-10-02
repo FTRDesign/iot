@@ -25,3 +25,4 @@ TestResults.xml
 *.su
 *.cycle
 **/Debug
+.settings/stm32cubeide.project.prefs
