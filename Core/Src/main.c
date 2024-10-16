@@ -17,6 +17,7 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
+#include <dal_uart.h>
 #include "main.h"
 #include "cmsis_os.h"
 #include "dfsdm.h"
@@ -28,7 +29,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -101,7 +101,8 @@ int main(void)
   MX_USB_OTG_FS_PCD_Init();
   MX_UART4_Init();
   /* USER CODE BEGIN 2 */
-
+  uint8_t data[3];
+  DAL_UartTx(data, 3);
   /* USER CODE END 2 */
 
   /* Init scheduler */
