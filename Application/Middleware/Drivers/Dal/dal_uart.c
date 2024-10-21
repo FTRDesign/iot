@@ -1,9 +1,11 @@
 /**
  ********************************************************************************
- * @file    ${file_name}
- * @author  ${user}
- * @date    ${date}
- * @brief
+ * @file    ${dal_uart}
+ * @author  ${Bruno Alves}
+ * @date    ${10-18-2024}
+ * @brief   Driver abstraction layer used to link the MCU peripheral drivers
+ *          with the middleware library to external peripherals as ble, wifi chips
+ *          and etc.
  ********************************************************************************
  */
 
@@ -21,20 +23,9 @@
  * PRIVATE MACROS AND DEFINES
  ************************************/
 
-#define UART_3 		3
-#define UART_4 		4
-
-// Define a table to Associate UART port and Peripheral Module
-#define UART_MODULE_LINK_TABLE \
-    PERIPHERAL_LINK(UART_3, WIFI)        \
-    PERIPHERAL_LINK(UART_4, CONSOLE)
-
-// Macro Auxiliar para Expansão
-#define PERIPHERAL_LINK(uart, module) module = uart
-
 // This board dependent and must to be adjusted
 // to each customized board
-#define NUMBER_OF_USED_UARTS		2
+#define NUMBER_OF_USED_UARTS		4
 
 // Define the number of bytes used the uart buffer
 #define UART_BUFFER_SIZE           32
@@ -50,18 +41,20 @@ typedef struct
 	UART_HandleTypeDef * UartHandle;
 	uint8_t UartBuffer[UART_BUFFER_SIZE];
 
-}sDalUartConfig_t;
+}sDalUart_t;
 
 typedef struct
 {
 	bool Initialized;
-	sDalUartConfig_t sDalUartConfig[NUMBER_OF_USED_UARTS];
+	sDalUart_t sDalUartConfig[NUMBER_OF_USED_UARTS];
 
-}sDalConfig_t;
+}sDalUartConfig_t;
 
 /************************************
  * STATIC VARIABLES
  ************************************/
+
+sDalUartConfig_t DalUartConfig = {.Initialized = false};
 
 /************************************
  * GLOBAL VARIABLES
@@ -78,6 +71,28 @@ typedef struct
 /************************************
  * GLOBAL FUNCTIONS
  ************************************/
+
+/**
+  * @brief  Link MCU UART handle Structure definition
+  *			with dal uart setup
+  *
+  *
+  * @param  None
+  * @retval None
+  */
+void DAL_UartInit(void)
+{
+	if (!DalUartConfig.Initialized)
+	{
+		// This is MCU dependent and must to be replaced if a new mcu
+		// must to be used
+		DalUartConfig.sDalUartConfig[DAL_UART3].UartHandle =  &huart3;
+		DalUartConfig.sDalUartConfig[DAL_UART4].UartHandle =  &huart4;
+
+		DalUartConfig.Initialized = true;
+	}
+}
+
 /**
   * @brief  Send n amount of bytes through uart interface
   *
@@ -90,9 +105,17 @@ typedef struct
   * @param  dataSizes 	: Number of bytes to be send
   * @retval bool		: True of the data was send, false if not
   */
-bool DAL_UartTx(uint8_t * data, uint16_t dataSizes)
+bool DAL_UartTx(uint8_t * data, uint16_t dataSizes, uint8_t uart)
 {
+	// is uart inside of the limits?
+	if (uart < DAL_UART_COUNT)
+	{
+		if ((DalUartConfig.sDalUartConfig[uart].UartHandle != NULL) && (dataSizes > 0) && (data != NULL))
+		{
+			HAL_UART_Transmit_IT(DalUartConfig.sDalUartConfig[uart].UartHandle, data, dataSizes);
+		}
+	}
 
-	return true;
+	return false;
 }
 
