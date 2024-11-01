@@ -13,7 +13,8 @@
  * INCLUDES
  ************************************/
 #include <dal_uart.h>
-#include "cmsis_os.h"
+#include "FreeRTOS.h"
+#include "semphr.h"
 #include "usart.h"
 /************************************
  * EXTERN VARIABLES
@@ -40,6 +41,8 @@ typedef struct
 	bool Initialized;
 	UART_HandleTypeDef * UartHandle;
 	uint8_t UartBuffer[UART_BUFFER_SIZE];
+	SemaphoreHandle_t UartMutex;
+	SemaphoreHandle_t UartSemaphore;
 
 }sDalUart_t;
 
@@ -54,7 +57,8 @@ typedef struct
  * STATIC VARIABLES
  ************************************/
 
-sDalUartConfig_t DalUartConfig = {.Initialized = false};
+static sDalUartConfig_t DalUartConfig = {.Initialized = false};
+
 
 /************************************
  * GLOBAL VARIABLES
@@ -86,8 +90,21 @@ void DAL_UartInit(void)
 	{
 		// This is MCU dependent and must to be replaced if a new mcu
 		// must to be used
-		DalUartConfig.sDalUartConfig[DAL_UART3].UartHandle =  &huart3;
-		DalUartConfig.sDalUartConfig[DAL_UART4].UartHandle =  &huart4;
+		DalUartConfig.sDalUartConfig[DAL_UART3].UartHandle = &huart3;
+		DalUartConfig.sDalUartConfig[DAL_UART4].UartHandle = &huart4;
+
+		// This part is from FREERTOS, must to be replaced if a different RTOS is being used
+		DalUartConfig.sDalUartConfig[DAL_UART3].UartMutex  = xSemaphoreCreateMutex();
+		DalUartConfig.sDalUartConfig[DAL_UART3].UartSemaphore = xSemaphoreCreateBinary();
+
+		// Take semaphore
+		xSemaphoreTake(DalUartConfig.sDalUartConfig[DAL_UART3].UartSemaphore, portMAX_DELAY);
+
+		DalUartConfig.sDalUartConfig[DAL_UART4].UartMutex  = xSemaphoreCreateMutex();
+		DalUartConfig.sDalUartConfig[DAL_UART4].UartSemaphore = xSemaphoreCreateBinary();
+
+		// Take semaphore
+		xSemaphoreTake(DalUartConfig.sDalUartConfig[DAL_UART4].UartSemaphore, portMAX_DELAY);
 
 		DalUartConfig.Initialized = true;
 	}
@@ -107,15 +124,50 @@ void DAL_UartInit(void)
   */
 bool DAL_UartTx(uint8_t * data, uint16_t dataSizes, uint8_t uart)
 {
-	// is uart inside of the limits?
-	if (uart < DAL_UART_COUNT)
+	if ((DalUartConfig.sDalUartConfig[uart].UartHandle == NULL) || (dataSizes = 0) || (data == NULL))
 	{
-		if ((DalUartConfig.sDalUartConfig[uart].UartHandle != NULL) && (dataSizes > 0) && (data != NULL))
-		{
-			HAL_UART_Transmit_IT(DalUartConfig.sDalUartConfig[uart].UartHandle, data, dataSizes);
-		}
+		return false;
+	}
+
+	switch(uart)
+	{
+		case DAL_UART0:
+		case DAL_UART1:
+		case DAL_UART2:
+		case DAL_UART3:
+		case DAL_UART4:
+			if (HAL_UART_Transmit_IT(DalUartConfig.sDalUartConfig[uart].UartHandle, data, dataSizes) == HAL_OK)
+			{
+				// Semaphore is gave for the HAL_UART_TxCpltCallback function
+				// Task using this function enters on blocked state
+				xSemaphoreTake(DalUartConfig.sDalUartConfig[uart].UartSemaphore, portMAX_DELAY);
+				return true;
+			}
+			break;
+		default:
+				return false;
+			break;
 	}
 
 	return false;
+}
+
+/**
+  * @brief Tx Transfer completed callback.
+  * @param huart UART handle.
+  * @retval None
+  */
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+	BaseType_t xHigherPriorityTaskWoken = pdTRUE;
+
+	for (eDalUartNumber_t uart = DAL_UART0; uart < DAL_UART_COUNT; uart++)
+	{
+		if (huart == DalUartConfig.sDalUartConfig[uart].UartHandle)
+		{
+			xSemaphoreGiveFromISR(DalUartConfig.sDalUartConfig[uart].UartSemaphore, &xHigherPriorityTaskWoken);
+			break;
+		}
+	}
 }
 
