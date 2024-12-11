@@ -124,10 +124,15 @@ void DAL_UartInit(void)
   */
 bool DAL_UartTx(uint8_t * data, uint16_t dataSizes, uint8_t uart)
 {
-	if ((DalUartConfig.sDalUartConfig[uart].UartHandle == NULL) || (dataSizes = 0) || (data == NULL))
+
+	if ((DalUartConfig.sDalUartConfig[uart].UartHandle == NULL) || (dataSizes == 0) || (data == NULL))
 	{
 		return false;
 	}
+
+	// Semaphore is gave for the HAL_UART_TxCpltCallback function
+	// Task using this function enters on blocked state
+	xSemaphoreTake(DalUartConfig.sDalUartConfig[uart].UartSemaphore, portMAX_DELAY);
 
 	switch(uart)
 	{
@@ -138,9 +143,6 @@ bool DAL_UartTx(uint8_t * data, uint16_t dataSizes, uint8_t uart)
 		case DAL_UART4:
 			if (HAL_UART_Transmit_IT(DalUartConfig.sDalUartConfig[uart].UartHandle, data, dataSizes) == HAL_OK)
 			{
-				// Semaphore is gave for the HAL_UART_TxCpltCallback function
-				// Task using this function enters on blocked state
-				xSemaphoreTake(DalUartConfig.sDalUartConfig[uart].UartSemaphore, portMAX_DELAY);
 				return true;
 			}
 			break;
