@@ -24,5 +24,30 @@ TestResults.xml
 *.d
 *.su
 *.cycle
-**/Debug
+# Ignora all in Debug/
+Debug/*
+
+# Keep Makefile and all necessary build files
+!Debug/Makefile
+!Debug/*.mk
+
+# Opcional: se quiser manter arquivos de configuração
+!Debug/*.ld
+!Debug/*.scf
+
+# Ignore files created by the compalation
+Debug/*.o
+Debug/*.d
+Debug/*.elf
+Debug/*.hex
+Debug/*.bin
+Debug/*.map
+Debug/*.lst
+Debug/*.log
+Debug/*.dep
+Debug/*.i
+Debug/*.s
+Debug/*.su
+Debug/*.crc
+
 .settings/stm32cubeide.project.prefs

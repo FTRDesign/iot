@@ -1,5 +1,5 @@
-name: Build STM32 Project IOT
-run-name: ${{ github.actor }} is running out GitHub Actions to STM32 IOT Project🚀
+name: Lint and Build STM32 Project
+
 on:
   push:
     branches:
@@ -9,25 +9,49 @@ on:
   pull_request:
     branches:
       - main
+
 jobs:
+  lint:
+    name: Run Super-Linter (warnings only)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Super-Linter
+        uses: super-linter/super-linter@v6
+        env:
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FILTER_REGEX_EXCLUDE: "^(Drivers|Middlewares|Core/Startup|Debug)/"
+          LINTER_C_DISABLED: false
+          LINTER_CPP_DISABLED: false
+          LINTER_MARKDOWN_DISABLED: false
+
   build:
+    name: Build STM32 Firmware
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Set up ARM GCC Toolchain
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gcc-arm-none-eabi
+      - name: Install ARM GCC Toolchain
+        run: |
+          sudo apt update
+          sudo apt install -y gcc-arm-none-eabi make
 
-    - name: Build project
-      run: make -C Debug
+      - name: Build firmware
+        working-directory: ./Debug
+        run: |
+          make
 
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: STM32-IOT-Build
-        path: iot/build/*.bin
-
+      - name: Upload firmware artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware
+          path: |
+            Debug/*.elf
+            Debug/*.hex
