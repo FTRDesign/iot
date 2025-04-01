@@ -48,6 +48,13 @@ jobs:
         run: |
           make
 
+      - name: Verificar arquivos ELF/HEX
+        run: |
+          echo "Arquivos .elf encontrados:"
+          find . -name '*.elf'
+          echo "Arquivos .hex encontrados:"
+          find . -name '*.hex'
+
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
