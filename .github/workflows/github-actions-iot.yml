@@ -46,7 +46,7 @@ jobs:
       - name: Build firmware
         working-directory: ./Debug
         run: |
-          make
+          make all
 
       - name: Verificar arquivos ELF/HEX
         run: |
