@@ -64,8 +64,8 @@ all: main-build
 main-build: iot.elf secondary-outputs
 
 # Tool invocations
-iot.elf iot.map: $(OBJS) $(USER_OBJS) C:\Users\xbruf\Documents\github\iot\STM32L475VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "iot.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\xbruf\Documents\github\iot\STM32L475VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="iot.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+iot.elf iot.map: $(OBJS) $(USER_OBJS) ../STM32L475VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "iot.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"../STM32L475VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="iot.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
