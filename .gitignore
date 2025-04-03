@@ -39,6 +39,7 @@ Debug/*
 !Debug/*.mk
 !Debug/**/*.mk
 
+!Debug/objects.list
 
 # Ignora tudo que for gerado na build
 Debug/**/*.o
