@@ -43,6 +43,10 @@ jobs:
           sudo apt update
           sudo apt install -y gcc-arm-none-eabi make
 
+      - name: Remove -fcyclomatic-complexity flag for CI build
+        run: |
+          find . -type f -name "*.mk" -exec sed -i 's/-fcyclomatic-complexity//g' {} +
+
       - name: Build firmware
         working-directory: ./Debug
         run: |
