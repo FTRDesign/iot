@@ -56,6 +56,6 @@ Debug/**/*.s
 Debug/**/*.su
 Debug/**/*.crc
 
-#*.cyclo
+*.cyclo
 
 .settings/stm32cubeide.project.prefs
