@@ -25,17 +25,17 @@ TestResults.xml
 *.su
 *.cycle
 
-# Ignora tudo dentro de Debug/
+# Ignore all in the Debug folder 
 Debug/*
 
-# Permite navegação em subpastas para alcançar .mk
+# Allow vavigation between sub folders to reach .mk
 !Debug/
 !Debug/Core/
 !Debug/Core/Src/
 !Debug/Drivers/
 !Debug/Middlewares/
 
-# Agora libera os arquivos .mk
+# Allow .mk
 !Debug/*.mk
 !Debug/**/*.mk
 
@@ -56,6 +56,6 @@ Debug/**/*.s
 Debug/**/*.su
 Debug/**/*.crc
 
-*.cyclo
+#*.cyclo
 
 .settings/stm32cubeide.project.prefs
