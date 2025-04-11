@@ -43,6 +43,13 @@ jobs:
           sudo apt update
           sudo apt install -y gcc-arm-none-eabi make
 
++     - name: Fix Windows include path
++       working-directory: ./Debug
++       run: |
++         # substitui qualquer referência absoluta do Windows pelo caminho relativo
++         find . -type f \( -name '*.mk' -o -name 'makefile' \) \
++           -exec sed -i 's|C:/Users/xbruf/Documents/github/iot/Application/Middleware/Drivers/Dal|../Application/Middleware/Drivers/Dal|g' {} +
+
       - name: Remove -fcyclomatic-complexity flag for CI build
         run: |
           find . -type f -name "*.mk" -exec sed -i 's/-fcyclomatic-complexity//g' {} +
@@ -50,7 +57,7 @@ jobs:
       - name: Build firmware
         working-directory: ./Debug
         run: |
-          make all PROJECT_PATH=$(pwd) CFLAGS+=" -I../Application/Middleware/Drivers/Dal"
+          make all PROJECT_PATH=$(pwd)
 
       - name: Verificar arquivos ELF/HEX
         run: |
