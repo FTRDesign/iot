@@ -50,7 +50,7 @@ jobs:
       - name: Build firmware
         working-directory: ./Debug
         run: |
-          make all
+          make all PROJECT_PATH=$(pwd)
 
       - name: Verificar arquivos ELF/HEX
         run: |
