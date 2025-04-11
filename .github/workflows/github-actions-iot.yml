@@ -50,7 +50,7 @@ jobs:
       - name: Build firmware
         working-directory: ./Debug
         run: |
-          make all PROJECT_PATH=$(pwd)
+          make all PROJECT_PATH=$(pwd) CFLAGS+=" -I../Application/Middleware/Drivers/Dal"
 
       - name: Verificar arquivos ELF/HEX
         run: |
