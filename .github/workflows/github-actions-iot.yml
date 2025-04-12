@@ -55,9 +55,8 @@ jobs:
           find . -type f -name "*.mk" -exec sed -i 's/-fcyclomatic-complexity//g' {} +
 
       - name: Build firmware
-        working-directory: ./Debug
         run: |
-          make all PROJECT_PATH=$(pwd)
+           make -f Debug/makefile all PROJECT_PATH=$(pwd)
 
       - name: Verificar arquivos ELF/HEX
         run: |
