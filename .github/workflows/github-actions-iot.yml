@@ -43,38 +43,21 @@ jobs:
           sudo apt update
           sudo apt install -y gcc-arm-none-eabi make
 
-      - name: Fix Windows include path
-        working-directory: ./Debug
-        run: |
-          # Substitui caminhos absolutos do Windows pelo relativo no Linux
-          find . -type f \( -name '*.mk' -o -name 'makefile' \) \
-            -exec sed -i 's|C:/Users/xbruf/Documents/github/iot/Application/Middleware/Drivers/Dal|../Application/Middleware/Drivers/Dal|g' {} +
-
-      - name: Remove -fcyclomatic-complexity flag for CI build
-        run: |
-          find . -type f -name "*.mk" -exec sed -i 's/-fcyclomatic-complexity//g' {} +
-
-      - name: Build DAL objects
-        working-directory: ./Debug
-        run: |
-          make PROJECT_PATH=$(pwd) CFLAGS+=" -I../Application/Middleware/Drivers/Dal" dal.o dal_uart.o
-
       - name: Build firmware
-        working-directory: ./Debug
         run: |
-          make all PROJECT_PATH=$(pwd) CFLAGS+=" -I../Application/Middleware/Drivers/Dal"
+          make -j$(nproc)
 
       - name: Verificar arquivos ELF/HEX
         run: |
           echo "Arquivos .elf encontrados:"
-          find . -name '*.elf'
+          find . -maxdepth 1 -name '*.elf'
           echo "Arquivos .hex encontrados:"
-          find . -name '*.hex'
+          find . -maxdepth 1 -name '*.hex'
 
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
           name: firmware
           path: |
-            Debug/*.elf
-            Debug/*.hex
+            *.elf
+            *.hex
