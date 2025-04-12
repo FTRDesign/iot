@@ -94,13 +94,13 @@ void DAL_UartInit(void)
 		DalUartConfig.sDalUartConfig[DAL_UART4].UartHandle = &huart4;
 
 		// This part is from FREERTOS, must to be replaced if a different RTOS is being used
-		//DalUartConfig.sDalUartConfig[DAL_UART3].UartMutex  = xSemaphoreCreateMutex();
+		DalUartConfig.sDalUartConfig[DAL_UART3].UartMutex  = xSemaphoreCreateMutex();
 		DalUartConfig.sDalUartConfig[DAL_UART3].UartSemaphore = xSemaphoreCreateBinary();
 
 		// Take semaphore
 		xSemaphoreTake(DalUartConfig.sDalUartConfig[DAL_UART3].UartSemaphore, portMAX_DELAY);
 
-		//DalUartConfig.sDalUartConfig[DAL_UART4].UartMutex  = xSemaphoreCreateMutex();
+		DalUartConfig.sDalUartConfig[DAL_UART4].UartMutex  = xSemaphoreCreateMutex();
 		DalUartConfig.sDalUartConfig[DAL_UART4].UartSemaphore = xSemaphoreCreateBinary();
 
 		// Take semaphore
