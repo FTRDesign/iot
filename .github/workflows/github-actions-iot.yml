@@ -54,6 +54,11 @@ jobs:
         run: |
           find . -type f -name "*.mk" -exec sed -i 's/-fcyclomatic-complexity//g' {} +
 
+      - name: Build DAL objects
+        working-directory: ./Debug
+        run: |
+          make PROJECT_PATH=$(pwd) CFLAGS+=" -I../Application/Middleware/Drivers/Dal" dal.o dal_uart.o
+
       - name: Build firmware
         working-directory: ./Debug
         run: |
