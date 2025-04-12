@@ -46,17 +46,18 @@ jobs:
       - name: Fix Windows include path
         working-directory: ./Debug
         run: |
-          # substitui qualquer referência absoluta do Windows pelo caminho relativo
+          # Substitui caminhos absolutos do Windows pelo relativo no Linux
           find . -type f \( -name '*.mk' -o -name 'makefile' \) \
-           -exec sed -i 's|C:/Users/xbruf/Documents/github/iot/Application/Middleware/Drivers/Dal|../Application/Middleware/Drivers/Dal|g' {} +
+            -exec sed -i 's|C:/Users/xbruf/Documents/github/iot/Application/Middleware/Drivers/Dal|../Application/Middleware/Drivers/Dal|g' {} +
 
       - name: Remove -fcyclomatic-complexity flag for CI build
         run: |
           find . -type f -name "*.mk" -exec sed -i 's/-fcyclomatic-complexity//g' {} +
 
       - name: Build firmware
+        working-directory: ./Debug
         run: |
-           make -f Debug/makefile all PROJECT_PATH=$(pwd)
+          make all PROJECT_PATH=$(pwd) CFLAGS+=" -I../Application/Middleware/Drivers/Dal"
 
       - name: Verificar arquivos ELF/HEX
         run: |
