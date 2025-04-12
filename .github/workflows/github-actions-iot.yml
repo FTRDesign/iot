@@ -38,6 +38,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: List project root
+        run: |
+         echo "CWD: $(pwd)"
+         ls -la
+
       - name: Install ARM GCC Toolchain
         run: |
           sudo apt update
@@ -45,7 +50,7 @@ jobs:
 
       - name: Build firmware
         run: |
-          make -j$(nproc)
+          make -f Makefile -j$(nproc)
 
       - name: Verificar arquivos ELF/HEX
         run: |
