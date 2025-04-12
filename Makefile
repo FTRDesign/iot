@@ -1,5 +1,5 @@
 ################################################################################
-# Makefile para STM32L475VGTX “iot”
+# Makefile para STM32L475VGTX "iot"
 # Gerado a partir do Makefile do STM32CubeIDE
 # Uso: make [all|hex|size|clean]
 ################################################################################
