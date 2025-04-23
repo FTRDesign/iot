@@ -74,3 +74,4 @@ clean:
 	rm -f $(OBJS) $(PROJECT).elf $(PROJECT).hex $(PROJECT).map $(DEPS)
 
 -include $(DEPS)
+
