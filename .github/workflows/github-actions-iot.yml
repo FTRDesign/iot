@@ -40,13 +40,26 @@ jobs:
 
       - name: List project root
         run: |
-         echo "CWD: $(pwd)"
-         ls -la
+          echo "CWD: $(pwd)"
+          ls -la
 
       - name: Install ARM GCC Toolchain
         run: |
           sudo apt update
-          sudo apt install -y gcc-arm-none-eabi make
+          sudo apt install -y gcc-arm-none-eabi make xxd
+
+      - name: Debug Makefile no runner
+        run: |
+          echo "== Caminho atual =="
+          pwd
+          echo "== Arquivos no diretório =="
+          ls -l
+          echo "== Tipo do Makefile =="
+          file Makefile
+          echo "== Início do conteúdo do Makefile =="
+          head -n 10 Makefile | cat -A
+          echo "== Makefile em hex =="
+          xxd -g 1 Makefile | head -n 1
 
       - name: Build firmware
         working-directory: ${{ github.workspace }}
