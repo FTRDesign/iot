@@ -49,10 +49,11 @@ jobs:
           sudo apt install -y gcc-arm-none-eabi make
 
       - name: Build firmware
-        run: |
-          make -f Makefile -j$(nproc)
+        working-directory: ${{ github.workspace }}
+        run: make -f Makefile -j$(nproc)
 
       - name: Verificar arquivos ELF/HEX
+        working-directory: ${{ github.workspace }}
         run: |
           echo "Arquivos .elf encontrados:"
           find . -maxdepth 1 -name '*.elf'
