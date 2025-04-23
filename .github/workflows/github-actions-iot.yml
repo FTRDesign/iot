@@ -48,6 +48,14 @@ jobs:
           sudo apt update
           sudo apt install -y gcc-arm-none-eabi make xxd
 
+      - name: Convert Makefile to LF no runner
+        run: |
+          sudo apt install -y dos2unix
+          dos2unix Makefile
+          echo "Arquivo convertido:"
+          file Makefile
+
+
       - name: Debug Makefile no runner
         run: |
           echo "== Caminho atual =="
