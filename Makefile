@@ -62,7 +62,7 @@ $(PROJECT).elf: $(OBJS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 %.o: %.s
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) -x assembler-with-cpp -c $< -o $@
 
 hex: $(PROJECT).elf
 	$(OBJCOPY) -O ihex $< $(PROJECT).hex
