@@ -1,4 +1,4 @@
-name: Lint and Build STM32 Project
+name: Build STM32 Firmware (STM32CubeIDE)
 
 on:
   push:
@@ -11,80 +11,36 @@ on:
       - main
 
 jobs:
-  lint:
-    name: Run Super-Linter (warnings only)
-    runs-on: ubuntu-latest
-    continue-on-error: true
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Super-Linter
-        uses: super-linter/super-linter@v6
-        env:
-          DEFAULT_BRANCH: main
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          FILTER_REGEX_EXCLUDE: "^(Drivers|Middlewares|Core/Startup|Debug)/"
-          LINTER_C_DISABLED: false
-          LINTER_CPP_DISABLED: false
-          LINTER_MARKDOWN_DISABLED: false
-
   build:
-    name: Build STM32 Firmware
-    runs-on: ubuntu-latest
+    name: Build STM32CubeIDE Project
+    runs-on: ubuntu-22.04
 
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: List project root
-        run: |
-          echo "CWD: $(pwd)"
-          ls -la
-
-      - name: Install ARM GCC Toolchain
+      - name: Install STM32CubeIDE CLI dependencies
         run: |
           sudo apt update
-          sudo apt install -y gcc-arm-none-eabi make xxd
+          sudo apt install -y wget unzip default-jre
 
-      - name: Convert Makefile to LF no runner
+      - name: Build project using STM32CubeIDE
+        uses: xanderhendriks/action-build-stm32cubeide@v15.0
+        with:
+          project-path: '.'
+          project-target: 'iot'
+
+      - name: List output files
         run: |
-          sudo apt install -y dos2unix
-          dos2unix Makefile
-          echo "Arquivo convertido:"
-          file Makefile
+          echo "Arquivos gerados:"
+          find . -name '*.elf' -o -name '*.hex' -o -name '*.map' -o -name '*.list'
 
-
-      - name: Debug Makefile no runner
-        run: |
-          echo "== Caminho atual =="
-          pwd
-          echo "== Arquivos no diretório =="
-          ls -l
-          echo "== Tipo do Makefile =="
-          file Makefile
-          echo "== Início do conteúdo do Makefile =="
-          head -n 10 Makefile | cat -A
-          echo "== Makefile em hex =="
-          xxd -g 1 Makefile | head -n 1
-
-      - name: Build firmware
-        working-directory: ${{ github.workspace }}
-        run: make -f Makefile -j$(nproc)
-
-      - name: Verificar arquivos ELF/HEX
-        working-directory: ${{ github.workspace }}
-        run: |
-          echo "Arquivos .elf encontrados:"
-          find . -maxdepth 1 -name '*.elf'
-          echo "Arquivos .hex encontrados:"
-          find . -maxdepth 1 -name '*.hex'
-
-      - name: Upload firmware artifact
+      - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: firmware
+          name: firmware-artifacts
           path: |
-            *.elf
-            *.hex
+            Debug/*.elf
+            Debug/*.hex
+            Debug/*.map
+            Debug/*.list
