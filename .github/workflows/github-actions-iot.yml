@@ -22,7 +22,7 @@ jobs:
       - name: Install STM32CubeIDE CLI dependencies
         run: |
           sudo apt update
-          sudo apt install -y wget unzip default-jre
+          sudo apt install -y wget unzip default-jre gcc-arm-none-eabi binutils-arm-none-eabi
 
       - name: Build project using STM32CubeIDE
         uses: xanderhendriks/action-build-stm32cubeide@v15.0
@@ -30,10 +30,14 @@ jobs:
           project-path: '.'
           project-target: 'iot'
 
+      - name: Generate HEX file from ELF
+        run: |
+          arm-none-eabi-objcopy -O ihex Debug/iot.elf Debug/iot.hex
+
       - name: List output files
         run: |
           echo "Arquivos gerados:"
-          find . -name '*.elf' -o -name '*.hex' -o -name '*.map' -o -name '*.list'
+          find Debug/ -name '*.elf' -o -name '*.hex' -o -name '*.map' -o -name '*.list'
 
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
