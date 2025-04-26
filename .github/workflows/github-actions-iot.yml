@@ -44,7 +44,7 @@ jobs:
         with:
           name: firmware-artifacts
           path: |
-            Debug/*.elf
-            Debug/*.hex
-            Debug/*.map
-            Debug/*.list
+            Debug/iot.elf
+            Debug/iot.hex
+            Debug/iot.map
+            Debug/iot.list
