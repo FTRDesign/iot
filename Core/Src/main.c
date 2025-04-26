@@ -103,7 +103,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   /* Start the scheduler so the created tasks start executing. */
-   vTaskStartScheduler();
+  vTaskStartScheduler();
 
   /* USER CODE END 2 */
 

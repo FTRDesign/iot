@@ -1,4 +1,4 @@
-name: Lint and Build STM32 Project
+name: Build STM32 Firmware (STM32CubeIDE)
 
 on:
   push:
@@ -11,58 +11,40 @@ on:
       - main
 
 jobs:
-  lint:
-    name: Run Super-Linter (warnings only)
-    runs-on: ubuntu-latest
-    continue-on-error: true
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Super-Linter
-        uses: super-linter/super-linter@v6
-        env:
-          DEFAULT_BRANCH: main
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          FILTER_REGEX_EXCLUDE: "^(Drivers|Middlewares|Core/Startup|Debug)/"
-          LINTER_C_DISABLED: false
-          LINTER_CPP_DISABLED: false
-          LINTER_MARKDOWN_DISABLED: false
-
   build:
-    name: Build STM32 Firmware
-    runs-on: ubuntu-latest
+    name: Build STM32CubeIDE Project
+    runs-on: ubuntu-22.04
 
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install ARM GCC Toolchain
+      - name: Install STM32CubeIDE CLI dependencies
         run: |
           sudo apt update
-          sudo apt install -y gcc-arm-none-eabi make
+          sudo apt install -y wget unzip default-jre gcc-arm-none-eabi binutils-arm-none-eabi
 
-      - name: Remove -fcyclomatic-complexity flag for CI build
+      - name: Build project using STM32CubeIDE
+        uses: xanderhendriks/action-build-stm32cubeide@v15.0
+        with:
+          project-path: '.'
+          project-target: 'iot'
+
+      - name: Generate HEX file from ELF
         run: |
-          find . -type f -name "*.mk" -exec sed -i 's/-fcyclomatic-complexity//g' {} +
+          arm-none-eabi-objcopy -O ihex Debug/iot.elf Debug/iot.hex
 
-      - name: Build firmware
-        working-directory: ./Debug
+      - name: List output files
         run: |
-          make all
+          echo "Arquivos gerados:"
+          find Debug/ -name '*.elf' -o -name '*.hex' -o -name '*.map' -o -name '*.list'
 
-      - name: Verificar arquivos ELF/HEX
-        run: |
-          echo "Arquivos .elf encontrados:"
-          find . -name '*.elf'
-          echo "Arquivos .hex encontrados:"
-          find . -name '*.hex'
-
-      - name: Upload firmware artifact
+      - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: firmware
+          name: firmware-artifacts
           path: |
-            Debug/*.elf
-            Debug/*.hex
+            Debug/iot.elf
+            Debug/iot.hex
+            Debug/iot.map
+            Debug/iot.list
