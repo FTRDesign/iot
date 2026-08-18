@@ -36,11 +36,24 @@ jobs:
           arm-none-eabi-gcc --version
           arm-none-eabi-objcopy --version
 
-      # 4. Executa o makefile gerado pelo STM32CubeIDE
+      # 4. Removed cyclomatic complexity targets
+      - name: Remove unsupported cyclomatic complexity targets
+        run: |
+          find Debug -name subdir.mk -type f -exec \
+            sed -i -E 's#[[:space:]]+[^[:space:]]*%\.cyclo:#:#' {} +
+
+          if grep -R --line-number \
+            --include='subdir.mk' \
+            '%\.cyclo:' Debug; then
+            echo "::error::A .cyclo target is still present in the generated Makefiles"
+            exit 1
+          fi
+
+      # 5. Executa o makefile gerado pelo STM32CubeIDE
       - name: Build firmware
         run: make -C Debug -j"$(nproc)" all
 
-      # 5. Gera os outros formatos a partir do ELF
+      # 6. Gera os outros formatos a partir do ELF
       - name: Generate additional firmware files
         run: |
           arm-none-eabi-objcopy -O ihex Debug/iot.elf Debug/iot.hex
@@ -48,7 +61,7 @@ jobs:
           arm-none-eabi-objdump -h -S Debug/iot.elf > Debug/iot.list
           arm-none-eabi-size Debug/iot.elf
 
-      # 6. Confirma que todos os arquivos foram criados
+      # 7. Confirma que todos os arquivos foram criados
       - name: List output files
         run: |
           echo "Arquivos gerados:"
@@ -59,7 +72,7 @@ jobs:
             Debug/iot.map \
             Debug/iot.list
 
-      # 7. Disponibiliza os arquivos na página do GitHub Actions
+      # 8. Disponibiliza os arquivos na página do GitHub Actions
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
         with:
