@@ -1,4 +1,4 @@
-name: Build STM32 Firmware (STM32CubeIDE)
+name: Build STM32 Firmware
 
 on:
   push:
@@ -12,33 +12,54 @@ on:
 
 jobs:
   build:
-    name: Build STM32CubeIDE Project
+    name: Build STM32 project with generated Makefiles
     runs-on: ubuntu-22.04
 
     steps:
+      # 1. Baixa o conteúdo do repositório para o runner Ubuntu
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install STM32CubeIDE CLI dependencies
+      # 2. Instala as ferramentas necessárias para executar os Makefiles
+      - name: Install ARM GCC toolchain and Make
         run: |
-          sudo apt update
-          sudo apt install -y wget unzip default-jre gcc-arm-none-eabi binutils-arm-none-eabi
+          sudo apt-get update
+          sudo apt-get install --yes \
+            make \
+            gcc-arm-none-eabi \
+            binutils-arm-none-eabi
 
-      - name: Build project using STM32CubeIDE
-        uses: xanderhendriks/action-build-stm32cubeide@v15.0
-        with:
-          project-path: '.'
-          project-target: 'iot'
+      # 3. Mostra as versões utilizadas no CI
+      - name: Show build tool versions
+        run: |
+          make --version
+          arm-none-eabi-gcc --version
+          arm-none-eabi-objcopy --version
 
-      - name: Generate HEX file from ELF
+      # 4. Executa o makefile gerado pelo STM32CubeIDE
+      - name: Build firmware
+        run: make -C Debug -j"$(nproc)" all
+
+      # 5. Gera os outros formatos a partir do ELF
+      - name: Generate additional firmware files
         run: |
           arm-none-eabi-objcopy -O ihex Debug/iot.elf Debug/iot.hex
+          arm-none-eabi-objcopy -O binary Debug/iot.elf Debug/iot.bin
+          arm-none-eabi-objdump -h -S Debug/iot.elf > Debug/iot.list
+          arm-none-eabi-size Debug/iot.elf
 
+      # 6. Confirma que todos os arquivos foram criados
       - name: List output files
         run: |
           echo "Arquivos gerados:"
-          find Debug/ -name '*.elf' -o -name '*.hex' -o -name '*.map' -o -name '*.list'
+          ls -lh \
+            Debug/iot.elf \
+            Debug/iot.hex \
+            Debug/iot.bin \
+            Debug/iot.map \
+            Debug/iot.list
 
+      # 7. Disponibiliza os arquivos na página do GitHub Actions
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -46,5 +67,7 @@ jobs:
           path: |
             Debug/iot.elf
             Debug/iot.hex
+            Debug/iot.bin
             Debug/iot.map
             Debug/iot.list
+          if-no-files-found: error
